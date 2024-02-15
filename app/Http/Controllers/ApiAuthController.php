@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
+use App\Models\RoleUser;
 use App\Models\User;
 use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules;
+
 
 class ApiAuthController extends Controller
 {
@@ -47,6 +51,43 @@ class ApiAuthController extends Controller
         return response()->json([
             'message' => 'El token se eliminó correctamente'
         ], 204 );
+    }
+
+
+    public function store(Request $request){
+
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string'],
+            'email' => ['required', 'string', 'email', 'unique:users'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()]
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'datos incorrectos', 
+                'errores' => $validator->errors()->toArray()
+            ], 422);
+        }
+
+        $user = New User();
+        $user->email = $request->email;
+        $user->password = $request->password;
+        $user->name = $request->name;
+        $user->save();
+
+        $roleUser = new RoleUser();
+        $roleUser->user_id = $user->id;
+        $roleUser->role_id = Role::AGENT;
+        $roleUser->save();
+
+
+        $user->tokens()->where('name', 'login_token')->delete();
+        $token = $user->createToken('login_token');
+        
+        return response()->json([
+            'message' => 'logged succesfully', 
+            'token' =>  $token->plainTextToken
+        ]);
     }
 
 

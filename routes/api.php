@@ -23,14 +23,11 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
 
 
-Route::post('/login', [ApiAuthController::class, 'login']);
-Route::middleware(['auth:sanctum'])->post('/logout', [ApiAuthController::class, 'logout']);
+Route::post('/login', [ApiAuthController::class, 'login'])->name('apiLogin');
+
+Route::middleware(['auth:sanctum'])->post('/logout', [ApiAuthController::class, 'logout'])->name('apiLogout');
 
 
-Route::get('test', function (){
-    return response()->json([
-        'message' => 'works!!'
-    ]);
-});
+Route::post('/register', [ApiAuthController::class, 'store'])->name('apiRegister');
 
 require __DIR__.'/properties.php';
