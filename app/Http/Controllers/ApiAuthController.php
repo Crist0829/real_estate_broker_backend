@@ -23,7 +23,7 @@ class ApiAuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'datos incorrectos', 
+                'message' => 'Incorrect data', 
                 'errores' => $validator->errors()->toArray()
             ], 422);
         }
@@ -49,7 +49,7 @@ class ApiAuthController extends Controller
         $user = User::where('email', auth()->user()->email)->first();
         $user->tokens()->where('name', 'login_token')->delete();
         return response()->json([
-            'message' => 'El token se eliminó correctamente'
+            'message' => 'Token was removed successfully'
         ], 204 );
     }
 
@@ -64,7 +64,7 @@ class ApiAuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'datos incorrectos', 
+                'message' => 'Incorrect data', 
                 'errores' => $validator->errors()->toArray()
             ], 422);
         }
