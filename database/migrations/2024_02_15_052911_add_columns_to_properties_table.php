@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColunmsToPropertiesTable extends Migration
+class AddColumnsToPropertiesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,8 @@ class AddColunmsToPropertiesTable extends Migration
     public function up()
     {
         Schema::table('properties', function (Blueprint $table) {
-            $table->string('location')->after('name');
+            $table->string('description')->after('location');
+            $table->enum('status', ['sold', 'rented', 'available'])->default('available');
         });
     }
 
