@@ -25,7 +25,7 @@ class ApiAuthController extends Controller
             return response()->json([
                 'message' => 'datos incorrectos', 
                 'errores' => $validator->errors()->toArray()
-            ]);
+            ], 422);
         }
 
         if(!Auth::attempt(['email' => $request->email, 'password' => $request->password])){

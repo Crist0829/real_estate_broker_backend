@@ -55,14 +55,14 @@ class PropertyController extends Controller
             'kitchens' => ['required', 'numeric'],
             'bathrooms' => ['required', 'numeric'],
             'garage' => ['required', 'boolean'],
-            'status' => ['required', 'boolean'],
+            'status' => ['required', 'string'],
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'datos incorrectos', 
                 'errores' => $validator->errors()->toArray()
-            ]);
+            ], 422);
         }
 
 
