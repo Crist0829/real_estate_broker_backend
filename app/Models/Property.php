@@ -24,5 +24,9 @@ class Property extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function califications(){
+        return $this->hasMany(PropertyCalification::class, 'property_id');
+    }
+
 }
 
