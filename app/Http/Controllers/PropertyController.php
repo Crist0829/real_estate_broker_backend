@@ -90,7 +90,7 @@ class PropertyController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'datos incorrectos', 
+                'message' => 'Incorrect data', 
                 'errores' => $validator->errors()->toArray()
             ], 422);
         }
