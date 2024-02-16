@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Property;
+use App\Models\PropertyCalification;
 use App\Models\PropertyImage;
 use App\Models\PropertyPrice;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class PropertyController extends Controller
     public function index(Request $request)
     {
         
-        $properties = $request->eliminated ? Property::onlyTrashed()->with(['prices', 'images', 'user']) : Property::with(['prices', 'images', 'user']);
+        $properties = $request->eliminated ? Property::onlyTrashed()->with(['prices', 'images', 'califications', 'user']) : Property::with(['prices', 'images', 'user']);
         $properties = $properties->where('user_id', auth()->user()->id)->paginate($request->paginate ?? 5);
         
         return response()->json([
@@ -35,7 +36,7 @@ class PropertyController extends Controller
      */
     public function indexAll(Request $request)
     {
-        $properties = Property::with(['prices', 'images', 'user']);        
+        $properties = Property::with(['prices', 'images', 'califications', 'user']);        
         $filtersWhere = $request->only(['bedrooms', 'bathrooms', 'kitchens', 'floors', 'livingrooms']);
 
         foreach($filtersWhere as $key => $value){
@@ -125,7 +126,7 @@ class PropertyController extends Controller
      */
     public function show($id)
     {
-        $property = Property::with(['images', 'prices', 'user'])->findOrFail($id);
+        $property = Property::with(['images', 'prices', 'califications', 'user'])->findOrFail($id);
         return response()->json(
             ['property' => $property]
         );
@@ -226,6 +227,15 @@ class PropertyController extends Controller
 
     }
 
+
+    
+    /**
+     * Add price
+     * 
+     *@param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function addPrice(Request $request, $id){
 
         $property = Property::findOrFail($id);
@@ -267,6 +277,48 @@ class PropertyController extends Controller
 
 
     /**
+     * Add calification
+     * 
+     *@param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function addCalification(Request $request, $id){
+
+        $validator = Validator::make($request->all(), [
+            'calification' => ['required', 'numeric'],
+        ]);
+
+
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Incorrect data', 
+                'errores' => $validator->errors()->toArray()
+            ], 422);
+        }
+
+        if($request->calification > 5 || $request->calification <  1){
+            return response()->json([
+                'message' => 'Incorrect data', 
+                'error' => "The rating must be a number between 1 and 5"
+            ], 422);
+        }
+
+        $property = Property::findOrFail($id);
+        $propertyCalification = PropertyCalification::where('user_id', auth()->user()->id)->where('property_id', $id)->first();
+        if(!$propertyCalification) $propertyCalification = new PropertyCalification();
+        $propertyCalification->user_id = auth()->user()->id;
+        $propertyCalification->property_id = $id;
+        $propertyCalification->calification = $request->calification;
+        $propertyCalification->save();
+
+        return response()->json($propertyCalification);
+    
+    }
+
+
+    /**
      * Remove the specified resource from storage.
      *
      * @param  int  $id
@@ -290,4 +342,54 @@ class PropertyController extends Controller
         ]);
 
     }
+
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function deletePrice($id){
+
+        $propertyPrice = PropertyPrice::findOrFail($id);
+        $property = Property::findOrFail($propertyPrice->property_id);
+        if($property->user_id != auth()->user()->id){
+            return response()->json([
+                'message' => 'Incorrect data', 
+                'error' =>  'The property was not charged by you'
+            ], 403);
+        }
+        $propertyPrice->delete();
+        return response()->json([
+            'message' => 'The price was successfully deleted', 
+        ]);
+
+    }
+
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function deleteImage($id){
+
+        $propertyImage = PropertyImage::findOrFail($id);
+        $property = Property::findOrFail($propertyImage->property_id);
+        if($property->user_id != auth()->user()->id){
+            return response()->json([
+                'message' => 'Incorrect data', 
+                'error' =>  'The property was not charged by you'
+            ], 403);
+        }
+        Storage::delete($propertyImage->name);
+        $propertyImage->delete();
+        return response()->json([
+            'message' => 'The price was successfully deleted', 
+        ]);
+
+    }
+
 }
