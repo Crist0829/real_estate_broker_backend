@@ -18,9 +18,9 @@ class PropertyController extends Controller
      */
     public function index(Request $request)
     {
-       
-        $properties = $request->eliminated ? Property::onlyTrashed()->with(['prices', 'images']) : Property::with(['prices', 'images']);
-        $properties = $properties->where('user_id', auth()->user()->id)->paginate($request->paginate ?? 8);
+        
+        $properties = $request->eliminated ? Property::onlyTrashed()->with(['prices', 'images', 'user']) : Property::with(['prices', 'images', 'user']);
+        $properties = $properties->where('user_id', auth()->user()->id)->paginate($request->paginate ?? 5);
         
         return response()->json([
             'properties' => $properties
@@ -35,7 +35,29 @@ class PropertyController extends Controller
      */
     public function indexAll(Request $request)
     {
-        $properties = Property::with(['prices', 'images'])->paginate(8);
+        $properties = Property::with(['prices', 'images', 'user']);        
+        $filtersWhere = $request->only(['bedrooms', 'bathrooms', 'kitchens', 'floors', 'livingrooms']);
+
+        foreach($filtersWhere as $key => $value){
+            if($request->$key && $request->$key != null){
+                $properties = $properties->where($key, $value);
+            }
+        }
+
+        if(isset($request->garage)){
+            $properties = $properties->where('garage', $request->garage);
+        }
+            
+
+        if($request->type){
+            $properties = $properties->whereHas('prices', function ($q) use ($request) {
+                $q->where('type', $request->type);
+            });
+        }
+
+
+
+        $properties = $properties->paginate($request->paginate ?? 8);
         return response()->json([
             'properties' => $properties
         ]);
@@ -83,7 +105,7 @@ class PropertyController extends Controller
         $property->bedrooms = $request->bedrooms;
         $property->livingrooms = $request->livingrooms;
         $property->bathrooms = $request->bathrooms;
-        $property->kitchens = $request->ketchens;
+        $property->kitchens = $request->kitchens;
         $property->size = $request->size;
         $property->garage = $request->garage;
         $property->user_id = auth()->user()->id;
@@ -103,7 +125,7 @@ class PropertyController extends Controller
      */
     public function show($id)
     {
-        $property = Property::findOrFail($id);
+        $property = Property::with(['images', 'prices', 'user'])->findOrFail($id);
         return response()->json(
             ['property' => $property]
         );
@@ -130,9 +152,15 @@ class PropertyController extends Controller
 
         $count = 0;
 
-        foreach($request->all() as $key => $value){
-            if($property->$key != $value){
-                $property->$property = $value;
+        $propertyFields = $request->only([
+            'livingromms', 'bedrooms', 'bathrooms', 
+            'kitchens', 'garage', 'size', 'floors', 
+            'status', 'name', 'description', 'location'
+        ]);
+
+        foreach($propertyFields as $key => $value){
+            if($property->$key != $request->$key){
+                $property->$key = $value;
                 $count ++;
             }
         }

@@ -14,6 +14,8 @@ Route::middleware(['auth:sanctum'])->group(function (){
     Route::put('/property/{id}', [PropertyController::class, 'update']);
     Route::post('/property/addPrice/{id}', [PropertyController::class, 'addPrice']);
     Route::delete('/property/{id}', [PropertyController::class, 'delete']);
+    Route::get('/property/{id}', [PropertyController::class, 'show']);
+
 
 });
 

@@ -29,9 +29,9 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Event::listen(
+        /* Event::listen(
             Registered::class,
             [SendWelcomeEmail::class, 'handle']
-        );
+        ); */
     }
 }
