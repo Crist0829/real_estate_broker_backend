@@ -82,7 +82,7 @@ class UserController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string'],
-            'email' => ['required', 'string'. 'email', 'unique:users'],
+            'email' => ['required', 'string', 'email'],
         ]);
 
         if ($validator->fails()) {
@@ -145,18 +145,22 @@ class UserController extends Controller
             ], 422);
         }
 
-        if($request->old_password == $request->password){
-            return response()->json([], 204);
-        }
-
-
         if ($user && Hash::check($request->old_password, $user->password)) {
-            $user->password = $request->password;
+
+            if(Hash::check($request->password, $user->password)){
+                return response()->json([], 204);
+            }
+    
+            $user->password =  Hash::make($request->password);
             $user->save();
             return response()->json([
                 'message' => 'The information was changed successfully', 
             ]);
         }
+
+        
+
+        
 
        
         return response()->json([

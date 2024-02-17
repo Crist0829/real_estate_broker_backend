@@ -20,9 +20,34 @@ class PropertyController extends Controller
     public function index(Request $request)
     {
         
-        $properties = $request->eliminated ? Property::onlyTrashed()->with(['prices', 'images', 'califications', 'user']) : Property::with(['prices', 'images', 'user']);
-        $properties = $properties->where('user_id', auth()->user()->id)->paginate($request->paginate ?? 5);
+        $properties = Property::with(['prices', 'images', 'califications', 'user']);        
+        $filtersWhere = $request->only(['bedrooms', 'bathrooms', 'kitchens', 'floors', 'livingrooms']);
+
+        if($request->deleted){
+            $properties = $properties->onlyTrashed();
+        }
+
+        foreach($filtersWhere as $key => $value){
+            if($request->$key && $request->$key != null){
+                $properties = $properties->where($key, $value);
+            }
+        }
+
+        if(isset($request->garage)){
+            $properties = $properties->where('garage', $request->garage);
+        }
+            
+
+        if($request->type){
+            $properties = $properties->whereHas('prices', function ($q) use ($request) {
+                $q->where('type', $request->type);
+            });
+        }
+
         
+
+        $properties = $properties->where('user_id', auth()->user()->id);
+        $properties = $properties->paginate($request->paginate ?? 8);
         return response()->json([
             'properties' => $properties
         ]);
@@ -335,10 +360,17 @@ class PropertyController extends Controller
             ], 403);
         }
 
+        if($property->trashed()){
+            $property->forceDelete();
+            return response()->json([
+                'message' => 'The property was successfully permanently deleted', 
+            ]);
+        }
+
         $property->delete();
 
         return response()->json([
-            'message' => 'The resource was successfully deleted', 
+            'message' => 'The property was successfully deleted', 
         ]);
 
     }
@@ -384,12 +416,48 @@ class PropertyController extends Controller
                 'error' =>  'The property was not charged by you'
             ], 403);
         }
-        Storage::delete($propertyImage->name);
+        $path = 'properties/'. $propertyImage->name;
+        Storage::disk('public')->delete($path);
         $propertyImage->delete();
         return response()->json([
             'message' => 'The price was successfully deleted', 
         ]);
 
     }
+
+
+
+    /**
+     * Restore afete a soft delete
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function restore($id){
+
+        $property = Property::withTrashed()->where('id', $id)->first();
+
+        if($property->user_id != auth()->user()->id){
+            return response()->json([
+                'message' => 'Incorrect data', 
+                'error' =>  'The property was not charged by you'
+            ], 403);
+        }
+
+
+        if($property && $property->trashed()){
+            $property->restore();
+            return response()->json([
+                'message' => 'The property was succesfully restored'
+            ]);
+        }
+
+        return response()->json([
+            'message'=> 'Incorrect Data',
+            'Error' => 'The property wasent deleted'
+        ], 422);
+
+    }
+
 
 }
