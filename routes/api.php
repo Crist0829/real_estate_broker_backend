@@ -22,7 +22,10 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 });
 
 
-
 Route::middleware('api')->post('/login', [ApiAuthController::class, 'login'])->name('apiLogin');
 Route::post('/register', [ApiAuthController::class, 'store'])->name('apiRegister');
 Route::middleware(['auth:sanctum'])->post('/logout', [ApiAuthController::class, 'logout'])->name('apiLogout');
+
+require __DIR__.'/user.php';
+//require __DIR__.'/properties.php';
+require __DIR__.'/properties.php';
