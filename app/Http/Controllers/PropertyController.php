@@ -291,6 +291,7 @@ class PropertyController extends Controller
         $price->description = $request->description;
         $price->name = $request->name;
         $price->property_id = $id;
+        $price->type = $request->type;
         $price->save();
 
         return response()->json([
