@@ -9,11 +9,11 @@ Es una plataforma para la administración de inmuebles contiene (por ahora):
 - CRUD para los inmuebles.
 - Administración de la cuenta y restablecimiento de la contraseña.
 - Envío de correo (despchado por queues).
-- Sistema de calificación por estrelas de los inmuebles.
+- Sistema de calificación por estrellas de los inmuebles.
 
 ## Requerimientos y documentación:
 Todos los requerimientos iniciales están listados en el documento requerimientos.pdf (en documentos de este mismo repositorio)
-así mismo está el documento documentación.pdf donde explico más detalladamente algunas funcionalidades y estructura.
+así mismo está el documento documentación.pdf y manual_de_usuario.pdf donde explico más detalladamente algunas funcionalidades y estructura.
 
 ### Instrucciones de instalación:
 
@@ -25,7 +25,7 @@ así mismo está el documento documentación.pdf donde explico más detalladamen
    cd /real_estate_broker_backend
 ```
 
-2)  Instala las depencias de composer:
+2)  Instala las dependencias de composer:
 
 
 ```bash
