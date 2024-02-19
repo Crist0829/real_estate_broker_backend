@@ -29,8 +29,7 @@ así mismo está el documento documentación.pdf donde explico más detalladamen
 
 
 ```bash
-   git clone https://github.com/Crist0829/real_estate_broker_backend.git
-   cd /real_estate_broker_backend
+   composer install
 ```
 
 3)  Configuración del entorno:
